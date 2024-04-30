@@ -16,7 +16,7 @@ app.register(cors, {
 
 // Define the '/self-test' route
 app.get('/self-test', async (request: FastifyRequest, reply: FastifyReply) => {
-    return { status: "OK" };
+    return { status: "OK aaassdas" };
 });
 
 // Run the server!

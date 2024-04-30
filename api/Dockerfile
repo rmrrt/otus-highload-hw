@@ -1,5 +1,7 @@
 FROM node:20-alpine
 WORKDIR /app
+ENV NODE_ENV=development
+
 
 # Copy necessary files
 COPY package*.json tsconfig.json ./

@@ -1,27 +1,26 @@
-version: '3'
+version: '3.9'
 
 services:
   api:
     build:
       context: ./api
-      dockerfile: Dockerfile.prod
+      network: host
     container_name: otus-highload-api
+    ports:
+      - 3000:3000
     volumes:
-      - ./api:/usr/src/app
+      - ./api/src:/app/src
+      - /app/node_modules
     environment:
       - DATABASE_URL=${DATABASE_URL}
-      - ROCKET_DATABASES=${ROCKET_DATABASES}
-      - ROCKET_ADDRESS=${ROCKET_ADDRESS}
-    ports:
-      - "8000:8000"
-
-  # The database service remains unchanged
+    depends_on:
+      - database
   database:
     image: postgres:15
     container_name: otus-highload-db
     hostname: otus-highload-db
-    expose: 
-      - "5432"
+    ports:
+      - 5432:5432
     volumes:
       - pgdata:/var/lib/postgresql/data/pgdata
     environment:
@@ -31,5 +30,6 @@ services:
       PGDATA: /var/lib/postgresql/data/pgdata
 
 volumes:
+  cargo-target: {}
   pgdata: {}
-  cargo-cache: {}  # Optional: Cache the cargo registry
+  cargo-cache: {}

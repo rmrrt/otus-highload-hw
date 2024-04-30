@@ -6,6 +6,7 @@ services:
       context: ./api
       network: host
     container_name: otus-highload-api
+    command: ["npm", "run", "dev"]
     ports:
       - 3000:3000
     volumes:

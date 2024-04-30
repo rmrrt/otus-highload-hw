@@ -1,31 +1,17 @@
-# Use the official Rust image as a parent image
-FROM rust:latest as builder
-
-ENV ROCKET_ADDRESS=0.0.0.0
-ENV ROCKET_ENV=production
-
-# Set the working directory inside the container
-WORKDIR /usr/src/app
-
-# Copy the current directory contents into the container at /usr/src/app
-COPY ./ .
-
-# Build your program for release
-RUN cargo build --release -v
-
-# Use Debian slim image for the runtime environment
-FROM debian:sid-slim
-
-# Set the working directory in the Debian image
+FROM node:20-alpine
 WORKDIR /app
 
-ENV ROCKET_ADDRESS=0.0.0.0
-ENV ROCKET_ENV=production
+# Copy necessary files
+COPY package*.json tsconfig.json ./
 
-# Copy the compiled binary from the builder stage to the Debian stage
-COPY --from=builder /usr/src/app/target/release/api /app/api
+# Install dependencies
+RUN npm install
 
-# The command to run when the container starts
-CMD ["./api"]
+# Copy the application source code into the container
+COPY src/ ./src
 
-EXPOSE 8000
+# Build the TypeScript files
+RUN npm run build
+
+EXPOSE 3000
+CMD ["node", "dist/server.js"]
