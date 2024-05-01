@@ -1,13 +1,11 @@
 import { Pool } from 'pg';
 
-class DbService {
+class DbConnect {
     private static instance: Pool;
 
-    private constructor() {}
-
     public static getPool(): Pool {
-        if (!DbService.instance) {
-            DbService.instance = new Pool({
+        if (!DbConnect.instance) {
+            DbConnect.instance = new Pool({
                 user: process.env.POSTGRES_USER,
                 host: 'otus-highload-db',
                 database: process.env.POSTGRES_DB,
@@ -15,8 +13,8 @@ class DbService {
                 port: 5432,
             });
         }
-        return DbService.instance;
+        return DbConnect.instance;
     }
 }
 
-export default DbService;
+export default DbConnect;

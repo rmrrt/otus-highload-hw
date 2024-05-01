@@ -1,8 +1,9 @@
 import Fastify, { FastifyReply, FastifyRequest } from 'fastify';
 import cors from '@fastify/cors';
-import DbService from "./services/DbService";
-import {IUserRegisterRequest} from "./types/User";
+import DbConnect from "./services/DB/DbConnect";
+import {IUserRegisterRequest, UserGetRequest, UserLoginRequest} from "./types/User";
 import UserHandler from "./services/UserHandler";
+import {createTable} from "./services/DB/Queries";
 import * as repl from "node:repl";
 
 const app = Fastify({
@@ -14,13 +15,10 @@ app.register(cors, {
     methods: ["GET", "POST", "PUT", "DELETE"]
 });
 
-app.get('/self-test', async (request: FastifyRequest, reply: FastifyReply) => {
-    try {
-        return { status: "OK" };
-    } catch (error) {
-        reply.code(500).send({ error: 'Database connection error' });
-    }
+app.get('/self-test', async () => {
+    return { status: "OK" };
 });
+
 app.post('/user/register', async (request: FastifyRequest, reply: FastifyReply) => {
     const body = <IUserRegisterRequest>request.body;
     const userHandler = new UserHandler();
@@ -28,13 +26,27 @@ app.post('/user/register', async (request: FastifyRequest, reply: FastifyReply) 
     reply.code(200).send(result);
 })
 
+app.get('/user/get/:userId', async (request, reply) => {
+    const params = <UserGetRequest>request.params;
+    const userHandler = new UserHandler();
+    const user = await userHandler.getById(params);
+    reply.code(200).send(user);
+});
+
+app.post('/login', async (request: FastifyRequest, reply: FastifyReply) => {
+    const userHandler = new UserHandler();
+    const body = <UserLoginRequest>request.body;
+    const user = await userHandler.login(body);
+    reply.code(200).send(user);
+})
+
 const start = async () => {
     try {
         await app.listen({ port: 3000, host: '0.0.0.0' });
 
-        const pool = DbService.getPool();
+        const pool = DbConnect.getPool();
         const client = await pool.connect();
-        await client.query("CREATE TABLE IF NOT EXISTS users (id SERIAL PRIMARY KEY, first_name VARCHAR NOT NULL, last_name VARCHAR NOT NULL, email VARCHAR NOT NULL, password VARCHAR NOT NULL, birthday DATE NOT NULL, city VARCHAR NOT NULL, interests VARCHAR NOT NULL, sex VARCHAR NOT NULL)");
+        await client.query(createTable);
         client.release();
 
     } catch (err) {

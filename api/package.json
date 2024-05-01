@@ -15,10 +15,12 @@
   "private": false,
   "dependencies": {
     "@fastify/cors": "^9.0.1",
+    "bcrypt": "^5.1.1",
     "fastify": "^4.26.2",
     "pg": "^8.11.5"
   },
   "devDependencies": {
+    "@types/bcrypt": "^5.0.2",
     "@types/node": "^20.12.7",
     "@types/pg": "^8.11.5",
     "nodemon": "^3.1.0",
