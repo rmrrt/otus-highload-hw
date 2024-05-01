@@ -1,39 +1,37 @@
-import Fastify, {FastifyReply, FastifyRequest} from 'fastify';
+import Fastify, { FastifyReply, FastifyRequest } from 'fastify';
 import cors from '@fastify/cors';
-import { AddressInfo } from 'net';
+import DbService from "./services/DbService";
 
-// Create a Fastify instance
 const app = Fastify({
     logger: true
 });
 
-// Register CORS plugin
 app.register(cors, {
-    // Configure CORS as needed
-    origin: "*", // Allowing all origins for simplicity; adjust as needed for security
+    origin: "*",
     methods: ["GET", "POST", "PUT", "DELETE"]
 });
 
-// Define the '/self-test' route
 app.get('/self-test', async (request: FastifyRequest, reply: FastifyReply) => {
-    return { status: "OK aaassdas" };
+    try {
+        return { status: "OK" };
+    } catch (error) {
+        reply.code(500).send({ error: 'Database connection error' });
+    }
 });
 
-// Run the server!
 const start = async () => {
     try {
         await app.listen({ port: 3000, host: '0.0.0.0' });
-        const address = app.server.address();
-        if (typeof address === 'string') {
-            app.log.info(`server listening on ${address}`);
-        } else if (address && typeof address === 'object') {
-            app.log.info(`server listening on ${address.address}:${address.port}`);
-        }
+
+        const pool = DbService.getPool();
+        const client = await pool.connect();
+        await client.query("CREATE TABLE IF NOT EXISTS users (id SERIAL PRIMARY KEY, first_name VARCHAR NOT NULL, last_name VARCHAR NOT NULL, email VARCHAR NOT NULL, password VARCHAR NOT NULL, birthday DATE NOT NULL, city VARCHAR NOT NULL, interests VARCHAR NOT NULL, sex VARCHAR NOT NULL)");
+        client.release();
+
     } catch (err) {
         app.log.error(err);
         process.exit(1);
     }
-}
-start().then(() => {
-    console.log("Server is running at port 3000");
-});
+};
+
+start().then(r => console.log('Server is running, database connected.'));
