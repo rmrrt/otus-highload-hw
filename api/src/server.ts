@@ -1,6 +1,9 @@
 import Fastify, { FastifyReply, FastifyRequest } from 'fastify';
 import cors from '@fastify/cors';
 import DbService from "./services/DbService";
+import {IUserRegisterRequest} from "./types/User";
+import UserHandler from "./services/UserHandler";
+import * as repl from "node:repl";
 
 const app = Fastify({
     logger: true
@@ -18,6 +21,12 @@ app.get('/self-test', async (request: FastifyRequest, reply: FastifyReply) => {
         reply.code(500).send({ error: 'Database connection error' });
     }
 });
+app.post('/user/register', async (request: FastifyRequest, reply: FastifyReply) => {
+    const body = <IUserRegisterRequest>request.body;
+    const userHandler = new UserHandler();
+    const result = await userHandler.register(body);
+    reply.code(200).send(result);
+})
 
 const start = async () => {
     try {
